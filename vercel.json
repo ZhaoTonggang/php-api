@@ -6,7 +6,8 @@
   },
   "routes":[
     {
-      "src":"/picture","dest":"/api/picture/index.php"
+      "src":"/picture","dest":"/api/picture/index.php",
+      "src":"/picture/*","dest":"/api/picture/index.php"
     }
   ]
 }
