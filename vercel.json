@@ -1,6 +1,6 @@
 {
   "functions":{
-    "api/picture/index.php":{
+    "api/jiexi/douyin/index.php":{
       "runtime":"vercel-php@0.7.3"
     }
   },
