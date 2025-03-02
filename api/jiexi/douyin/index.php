@@ -1,77 +1,97 @@
 <?php
-$msg = urldecode($_REQUEST['msg']);      //获取视频链接
- 
-if (is_numeric($msg)) {
-    $video_id = $msg;
+/*
+名称：抖音无水印解析脚本
+源码作者：赵彤刚
+测试环境：PHP 8.4
+源码版本：v2.7.0
+最后更新：2025年1月6日
+*/
+// 拦截非POST请求
+if ($_SERVER['REQUEST_METHOD'] != 'POST') {
+    header('Location: https://blog.heheda.top');
+    exit;
+}
+// 响应头
+header("Content-type: application/json; charset=utf-8");
+header("Access-Control-Allow-Origin: *");
+header("X-Powered-By: PHP/" . PHP_VERSION);
+header("Content-language: zh");
+// 伪造请求头
+$uavalue = "Mozilla/5.0 (Linux; Android 13.0.0; SM-G955U Build/R16NW) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Mobile Safari/537.36";
+$headers = [
+    "Content-Type: application/x-www-form-urlencoded",
+    "User-Agent: " . $uavalue,
+    "Accept-language: zh-CN,zh;q=0.9,de;q=0.8,ug;q=0.7",
+    "Referer: https://www.douyin.com/?is_from_mobile_home=1&recommend=1"
+];
+// 获取POST输入
+$url = urldecode($_POST['url']);
+// 判断是否为数字
+if (is_numeric($url)) {
+    $video_id = $url;
 } else {
-    preg_match('/https?:\/\/[^\s]+/', $msg, $video_url);
+    preg_match('/https?:\/\/[^\s]+/', $url, $video_url);
     $video_url = $video_url[0];
- 
     $redirected_url = get_redirected_url($video_url);
     preg_match('/(\d+)/', $redirected_url, $matches);
     $video_id = $matches[1];
-    // echo $video_id;
 }
- 
-function get_redirected_url($url) {
-    $ch = curl_init($url);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-    curl_exec($ch);
-    $redirected_url = curl_getinfo($ch, CURLINFO_EFFECTIVE_URL);
-    curl_close($ch);
-    return $redirected_url;
-}
- 
- 
- 
-$headers = [
-    'User-Agent: Mozilla/5.0 (Linux; Android 8.0.0; SM-G955U Build/R16NW) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Mobile Safari/537.36',
-    'Referer: https://www.douyin.com/?is_from_mobile_home=1&recommend=1'
-];
- 
- 
-$url = "https://www.iesdouyin.com/share/video/$video_id/";
- 
-$ch = curl_init($url);
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
- 
-$response = curl_exec($ch);
-curl_close($ch);
- 
- 
+// 获取数据
+$adder = "https://www.iesdouyin.com/share/video/" . $video_id . "/";
+$context = stream_context_create([
+    'http' => [
+        'method' => 'GET',
+        'header' => $headers,
+    ]
+]);
+$response = file_get_contents($adder, false, $context);
 preg_match('/_ROUTER_DATA\s*=\s*(\{.*?\});/', $response, $matches);
 $data = $matches[1];
- 
-// 解析 JSON 数据
+// 解析JSON数据
 $jsonData = json_decode($data, true);
- 
-// 获取视频信息
+// 筛选信息
 $itemList = $jsonData['loaderData']['video_(id)/page']['videoInfoRes']['item_list'][0];
-$nickname = $itemList['author']['nickname'];
-$title = $itemList['desc'];
-$awemeId = $itemList['aweme_id'];
+$nickname = $itemList['author'];
 $video = $itemList['video']['play_addr']['uri'];
-$videoUrl = $video !== null ? (strpos($video, 'mp3') === false ? 'https://www.douyin.com/aweme/v1/play/?video_id=' . $video : $video) : null;
-$cover = $itemList['video']['cover']['url_list'][0];
 $images = $itemList['images'] ?? null;
- 
-$output = [
-    'msg' =>empty($nickname)?'解析失败！':'解析成功！️',
-    'name' => $nickname,
-    'title' => $title,
-    // 'aweme_id' => $awemeId,
-    'video' => $videoUrl,
-    'cover' => $cover,
-    'images' => array_map(function($image) {
-        return $image['url_list'][0];
+// 构造输出
+$outData = [
+    'code' => empty($nickname) ? 0 : 1,
+    'msg' => empty($nickname) ? '解析失败！' : '解析成功！️',
+    'name' => $nickname['nickname'],
+    'title' => $itemList['desc'],
+    'aweme_id' => $itemList['aweme_id'],
+    'video' => $video !== null ? (strpos($video, 'mp3') === false ? 'https://www.douyin.com/aweme/v1/play/?video_id=' . $video : $video) : null,
+    'cover' => $itemList['video']['cover']['url_list'][0],
+    'images' => array_map(function ($image) {
+        return $image['url_list'];
     }, is_array($images) ? $images : []),
-    'type' =>empty($images)?'视频':'图集',
-    'tips' => '' 
+    'type' => empty($images) ? '视频' : '图集'
 ];
- 
-header('Content-Type: application/json');
-echo json_encode($output,JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
- 
-?>
+// 输出
+echo json_encode($outData);
+// 获取落地页
+function get_redirected_url($url)
+{
+    // 变量提升
+    global $headers, $uavalue;
+    // 环境配置
+    ini_set("user_agent", $uavalue);
+    $context = stream_context_create([
+        'http' => [
+            'method' => 'GET',
+            // 启用重定向
+            'follow_location' => 1,
+            // 最大重定向次数
+            'max_redirects' => 5,
+            'header' => $headers,
+        ],
+    ]);
+    $response = file_get_contents($url, false, $context);
+    foreach ($http_response_header as $header) {
+        if (strpos($header, 'Location:') === 0) {
+            return trim(substr($header, 9));
+        }
+    }
+    return $url;
+}
