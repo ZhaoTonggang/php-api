@@ -4,8 +4,10 @@
 源码作者：赵彤刚
 测试环境：PHP 8.4
 源码版本：v2.7.0
+开源协议：Apache 2.0
 最后更新：2025年1月6日
 */
+
 // 拦截非POST请求
 if ($_SERVER['REQUEST_METHOD'] != 'POST') {
     header('Location: https://blog.heheda.top');
@@ -17,7 +19,7 @@ header("Access-Control-Allow-Origin: *");
 header("X-Powered-By: PHP/" . PHP_VERSION);
 header("Content-language: zh");
 // 伪造请求头
-$uavalue = "Mozilla/5.0 (Linux; Android 13.0.0; SM-G955U Build/R16NW) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Mobile Safari/537.36";
+$uavalue = "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Mobile Safari/537.36";
 $headers = [
     "Content-Type: application/x-www-form-urlencoded",
     "User-Agent: " . $uavalue,
@@ -70,10 +72,10 @@ $outData = [
 ];
 // 输出
 echo json_encode($outData);
-// 获取落地页
+// 重定向方法
 function get_redirected_url($url)
 {
-    // 变量提升
+    // 赋予全局变量
     global $headers, $uavalue;
     // 环境配置
     ini_set("user_agent", $uavalue);
