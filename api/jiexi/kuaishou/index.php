@@ -3,7 +3,7 @@
 名称：快手无水印解析脚本
 源码作者：赵彤刚
 测试环境：PHP 8.4
-源码版本：v1.4.0
+源码版本：v1.4.1
 开源协议：Apache 2.0
 最后更新：2024年11月6日
 */
@@ -66,12 +66,12 @@ $context = stream_context_create([
 $response = file_get_contents($redirected_url, false, $context);
 preg_match('/window\.INIT_STATE\s*=\s\{*(.*?)\}<\/script>/s', $response, $matches);
 $data = $matches[1];
-preg_match('/"userName":"(.*?)"/s', $response, $userName);
-preg_match('/"caption":"(.*?)"/s', $response, $caption);
-preg_match('/"mainMvUrls":(.*?)]/s', $response, $mainMvUrls);
-preg_match('/"coverUrls":(.*?)]/s', $response, $coverUrls);
-preg_match('/"webpCoverUrls":(.*?)]/s', $response, $webpCoverUrls);
-preg_match('/"audioUrls":(.*?)]/s', $response, $audioUrls);
+preg_match('/"userName":"(.*?)"/s', $data, $userName);
+preg_match('/"caption":"(.*?)"/s', $data, $caption);
+preg_match('/"mainMvUrls":(.*?)]/s', $data, $mainMvUrls);
+preg_match('/"coverUrls":(.*?)]/s', $data, $coverUrls);
+preg_match('/"webpCoverUrls":(.*?)]/s', $data, $webpCoverUrls);
+preg_match('/"audioUrls":(.*?)]/s', $data, $audioUrls);
 // 构造输出
 $outData = [
     "user_name" => $userName[1],
