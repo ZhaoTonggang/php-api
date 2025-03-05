@@ -10,6 +10,9 @@
     },
     {
       "src":"/jiexi/kuaishou(.*)","dest":"/api/jiexi/kuaishou/index.php"
+    },
+    {
+      "src":"/jiexi/weishi(.*)","dest":"/api/jiexi/weishi/index.php"
     }
   ]
 }
