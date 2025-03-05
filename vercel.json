@@ -1,12 +1,13 @@
 {
   "functions":{
-    "api/jiexi/douyin/index.php":{
+    "api/jiexi/*":{
       "runtime":"vercel-php@0.7.3"
     }
   },
   "routes":[
     {
-      "src":"/jiexi/douyin(.*)","dest":"/api/jiexi/douyin/index.php"
+      "src":"/jiexi/douyin(.*)","dest":"/api/jiexi/douyin/index.php",
+      "src":"/jiexi/kuaishou(.*)","dest":"/api/jiexi/kuaishou/index.php"
     }
   ]
 }
