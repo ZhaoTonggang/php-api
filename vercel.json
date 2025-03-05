@@ -1,6 +1,6 @@
 {
   "functions":{
-    "api/jiexi/*":{
+    "api/jiexi/**/*.php":{
       "runtime":"vercel-php@0.7.3"
     }
   },
