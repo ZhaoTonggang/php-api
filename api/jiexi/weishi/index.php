@@ -56,7 +56,8 @@ function get_redirected_url($url)
         $response = file_get_contents($url, false, $context);
         if ($response === false) {
             // 处理错误
-            return null;
+            echo json_encode(['msg' => '获取数据失败！算法可能已失效，请联系管理员更新！']);
+            exit;
         }
         $location = null;
         foreach ($http_response_header as $header) {
